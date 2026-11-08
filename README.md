@@ -2,7 +2,7 @@
 
 A demo project showcasing Spring Boot 3 development in Java with **functional routing** (`RouterFunction` + handler
 classes) and **Mono/Flux** end to end, on a fully reactive stack. It is the Java counterpart of
-[spring-boot-3-kotlin-demo-corouter](../../Kotlin/spring-boot-3-kotlin-demo-corouter), built on the domain of
+[spring-boot-3-kotlin-demo-corouter](../spring-boot-3-kotlin-demo-corouter), built on the domain of
 [spring-boot-java-audit-skills-demo](../spring-boot-java-audit-skills-demo), and written to respect every invariant of
 [audit-skills](../../audit-skills) (see [AGENTS.md](AGENTS.md)).
 
