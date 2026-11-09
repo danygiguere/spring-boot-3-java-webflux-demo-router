@@ -1,16 +1,16 @@
 package com.example.routerdemo.handler;
 
 import com.example.routerdemo.dto.DevTokenRequest;
+import com.example.routerdemo.security.DevTokenEnabled;
 import com.example.routerdemo.service.DevTokenService;
 import com.example.routerdemo.web.RequestValidator;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 @Component
-@Profile("dev")
+@DevTokenEnabled
 public class AuthHandler {
 
     private final DevTokenService devTokenService;

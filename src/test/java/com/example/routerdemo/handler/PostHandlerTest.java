@@ -5,10 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.example.routerdemo.dto.PostDetails;
 import com.example.routerdemo.dto.PostSummary;
 import com.example.routerdemo.support.IntegrationTest;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -106,7 +106,10 @@ class PostHandlerTest extends IntegrationTest {
                 .expectBody()
                 .jsonPath("$.type")
                 .isEqualTo("/errors/header-required");
+    }
 
+    @Test
+    void create_malformedIdempotencyKey_returns400() {
         as(AUTHOR)
                 .post()
                 .uri("/posts")
@@ -121,8 +124,28 @@ class PostHandlerTest extends IntegrationTest {
     }
 
     @Test
+    void create_validationMessages_followAcceptLanguage() {
+        as(AUTHOR)
+                .post()
+                .uri("/posts")
+                .header("Idempotency-Key", UUID.randomUUID().toString())
+                .header("Accept-Language", "fr")
+                .bodyValue(Map.of("content", "x".repeat(5001)))
+                .exchange()
+                .expectStatus()
+                .isEqualTo(422)
+                .expectBody()
+                .jsonPath("$.detail")
+                .isEqualTo("Échec de la validation — veuillez corriger les erreurs ci-dessus.")
+                .jsonPath("$.errors.content[0]")
+                .isEqualTo("Le contenu ne doit pas dépasser 5000 caractères");
+    }
+
+    @Test
     void create_invalidBody_returns422WithFieldErrors() {
-        List<String> elevenImages = Collections.nCopies(11, "https://images.example.com/x.jpg");
+        List<String> elevenImages = IntStream.range(0, 11)
+                .mapToObj(i -> "https://images.example.com/" + i + ".jpg")
+                .toList();
         as(AUTHOR)
                 .post()
                 .uri("/posts")
@@ -148,6 +171,22 @@ class PostHandlerTest extends IntegrationTest {
                 .expectBody()
                 .jsonPath("$.errors['imageUrls[0]'][0]")
                 .isEqualTo("Image URL must be a valid https URL");
+    }
+
+    @Test
+    void create_duplicateImageUrls_returns422() {
+        String url = "https://images.example.com/x.jpg";
+        as(AUTHOR)
+                .post()
+                .uri("/posts")
+                .header("Idempotency-Key", UUID.randomUUID().toString())
+                .bodyValue(Map.of("content", "ok", "imageUrls", List.of(url, url)))
+                .exchange()
+                .expectStatus()
+                .isEqualTo(422)
+                .expectBody()
+                .jsonPath("$.errors.imageUrls[0]")
+                .isEqualTo("Image URLs must be unique");
     }
 
     @Test
