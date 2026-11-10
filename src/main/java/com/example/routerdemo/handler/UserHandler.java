@@ -1,5 +1,6 @@
 package com.example.routerdemo.handler;
 
+import com.example.routerdemo.dto.ImageResponse;
 import com.example.routerdemo.dto.PostSummary;
 import com.example.routerdemo.dto.ProfileRequest;
 import com.example.routerdemo.dto.UserResponse;
@@ -37,19 +38,17 @@ public class UserHandler {
     public Mono<ServerResponse> findAll(ServerRequest request) {
         long afterId = Requests.afterId(request);
         int limit = Requests.limit(request);
-        return currentUser.get().flatMap(me -> ServerResponse.ok()
-                .body(userService.findAll(me, afterId, limit), UserResponse.class));
+        return ServerResponse.ok().body(userService.findAll(afterId, limit), UserResponse.class);
     }
 
     public Mono<ServerResponse> findById(ServerRequest request) {
         long id = Requests.pathId(request, "id");
-        return currentUser.get().flatMap(me -> userService.findById(me, id)).flatMap(user -> ServerResponse.ok()
-                .bodyValue(user));
+        return userService.findById(id).flatMap(user -> ServerResponse.ok().bodyValue(user));
     }
 
     public Mono<ServerResponse> findProfile(ServerRequest request) {
         long id = Requests.pathId(request, "id");
-        return currentUser.get().flatMap(me -> userService.findProfile(me, id)).flatMap(profile -> ServerResponse.ok()
+        return userService.findProfile(id).flatMap(profile -> ServerResponse.ok()
                 .bodyValue(profile));
     }
 
@@ -66,15 +65,20 @@ public class UserHandler {
         long id = Requests.pathId(request, "id");
         long beforeId = Requests.beforeId(request);
         int limit = Requests.limit(request);
-        return currentUser.get().flatMap(me -> ServerResponse.ok()
-                .body(postService.findByAuthor(me, id, beforeId, limit), PostSummary.class));
+        return ServerResponse.ok().body(postService.findByAuthor(id, beforeId, limit), PostSummary.class);
     }
 
     public Mono<ServerResponse> findLikedPosts(ServerRequest request) {
         long id = Requests.pathId(request, "id");
         long beforeId = Requests.beforeId(request);
         int limit = Requests.limit(request);
-        return currentUser.get().flatMap(me -> ServerResponse.ok()
-                .body(postService.findLikedBy(me, id, beforeId, limit), PostSummary.class));
+        return ServerResponse.ok().body(postService.findLikedBy(id, beforeId, limit), PostSummary.class);
+    }
+
+    public Mono<ServerResponse> findImages(ServerRequest request) {
+        long id = Requests.pathId(request, "id");
+        long beforeId = Requests.beforeId(request);
+        int limit = Requests.limit(request);
+        return ServerResponse.ok().body(userService.findImages(id, beforeId, limit), ImageResponse.class);
     }
 }

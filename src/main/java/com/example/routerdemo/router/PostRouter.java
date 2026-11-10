@@ -24,7 +24,7 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
-/** Posts of the caller's enterprise; writes are restricted to the author. */
+/** Posts are visible to every user; writes are restricted to the author. */
 @Configuration
 public class PostRouter {
 
@@ -38,7 +38,7 @@ public class PostRouter {
                 operation =
                         @Operation(
                                 operationId = "getFeed",
-                                summary = "The enterprise feed, newest first (hasManyThrough)",
+                                summary = "The feed, newest first, with image and like counts",
                                 parameters = {
                                     @Parameter(
                                             in = ParameterIn.QUERY,

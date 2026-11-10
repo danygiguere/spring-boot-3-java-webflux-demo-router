@@ -37,8 +37,7 @@ public class PostHandler {
     public Mono<ServerResponse> feed(ServerRequest request) {
         long beforeId = Requests.beforeId(request);
         int limit = Requests.limit(request);
-        return currentUser.get().flatMap(me -> ServerResponse.ok()
-                .body(postService.feed(me, beforeId, limit), PostSummary.class));
+        return ServerResponse.ok().body(postService.feed(beforeId, limit), PostSummary.class);
     }
 
     public Mono<ServerResponse> create(ServerRequest request) {
@@ -56,8 +55,7 @@ public class PostHandler {
 
     public Mono<ServerResponse> findById(ServerRequest request) {
         long id = Requests.pathId(request, "id");
-        return currentUser.get().flatMap(me -> postService.findById(me, id)).flatMap(post -> ServerResponse.ok()
-                .bodyValue(post));
+        return postService.findById(id).flatMap(post -> ServerResponse.ok().bodyValue(post));
     }
 
     public Mono<ServerResponse> update(ServerRequest request) {
@@ -80,16 +78,14 @@ public class PostHandler {
 
     public Mono<ServerResponse> findImages(ServerRequest request) {
         long id = Requests.pathId(request, "id");
-        return currentUser.get().flatMap(me -> ServerResponse.ok()
-                .body(postService.findImages(me, id), ImageResponse.class));
+        return ServerResponse.ok().body(postService.findImages(id), ImageResponse.class);
     }
 
     public Mono<ServerResponse> findLikers(ServerRequest request) {
         long id = Requests.pathId(request, "id");
         long afterId = Requests.afterId(request);
         int limit = Requests.limit(request);
-        return currentUser.get().flatMap(me -> ServerResponse.ok()
-                .body(postService.findLikers(me, id, afterId, limit), UserResponse.class));
+        return ServerResponse.ok().body(postService.findLikers(id, afterId, limit), UserResponse.class);
     }
 
     public Mono<ServerResponse> like(ServerRequest request) {

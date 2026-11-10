@@ -1,5 +1,6 @@
 package com.example.routerdemo.router;
 
+import com.example.routerdemo.dto.ImageResponse;
 import com.example.routerdemo.dto.MeResponse;
 import com.example.routerdemo.dto.PostSummary;
 import com.example.routerdemo.dto.ProfileRequest;
@@ -23,7 +24,6 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
-/** Users of the caller's enterprise only. */
 @Configuration
 public class UserRouter {
 
@@ -78,7 +78,7 @@ public class UserRouter {
                 operation =
                         @Operation(
                                 operationId = "getUsers",
-                                summary = "List users of the caller's enterprise, oldest first",
+                                summary = "List users, oldest first",
                                 parameters = {
                                     @Parameter(
                                             in = ParameterIn.QUERY,
@@ -173,6 +173,34 @@ public class UserRouter {
                                                                                                         PostSummary
                                                                                                                 .class)))))),
         @RouterOperation(
+                path = "/users/{id}/images",
+                method = RequestMethod.GET,
+                beanClass = UserHandler.class,
+                beanMethod = "findImages",
+                operation =
+                        @Operation(
+                                operationId = "getUserImages",
+                                summary = "List images of a user's posts, newest first (hasManyThrough)",
+                                parameters = {
+                                    @Parameter(
+                                            in = ParameterIn.QUERY,
+                                            name = "beforeId",
+                                            description = "Cursor: last id of the previous page"),
+                                    @Parameter(in = ParameterIn.QUERY, name = "limit", description = "1 to 100")
+                                },
+                                responses =
+                                        @ApiResponse(
+                                                responseCode = "200",
+                                                content =
+                                                        @Content(
+                                                                array =
+                                                                        @ArraySchema(
+                                                                                schema =
+                                                                                        @Schema(
+                                                                                                implementation =
+                                                                                                        ImageResponse
+                                                                                                                .class)))))),
+        @RouterOperation(
                 path = "/users/{id}",
                 method = RequestMethod.GET,
                 beanClass = UserHandler.class,
@@ -180,7 +208,7 @@ public class UserRouter {
                 operation =
                         @Operation(
                                 operationId = "getUserById",
-                                summary = "Get a user of the caller's enterprise",
+                                summary = "Get a user (no email)",
                                 responses =
                                         @ApiResponse(
                                                 responseCode = "200",
@@ -197,6 +225,7 @@ public class UserRouter {
                         .GET("/{id}/profile", handler::findProfile)
                         .GET("/{id}/posts", handler::findPosts)
                         .GET("/{id}/liked-posts", handler::findLikedPosts)
+                        .GET("/{id}/images", handler::findImages)
                         .GET("/{id}", handler::findById))
                 .build();
     }
