@@ -43,8 +43,18 @@ public class PostRouter {
                                     @Parameter(
                                             in = ParameterIn.QUERY,
                                             name = "beforeId",
-                                            description = "Cursor: last id of the previous page"),
-                                    @Parameter(in = ParameterIn.QUERY, name = "limit", description = "1 to 100")
+                                            description = "Cursor: last id of the previous page",
+                                            schema = @Schema(type = "integer", format = "int64", minimum = "1")),
+                                    @Parameter(
+                                            in = ParameterIn.QUERY,
+                                            name = "limit",
+                                            description = "1 to 100",
+                                            schema =
+                                                    @Schema(
+                                                            type = "integer",
+                                                            format = "int32",
+                                                            minimum = "1",
+                                                            maximum = "100"))
                                 },
                                 responses =
                                         @ApiResponse(
@@ -101,6 +111,13 @@ public class PostRouter {
                         @Operation(
                                 operationId = "getPostImages",
                                 summary = "List a post's images in display order (hasMany)",
+                                parameters = {
+                                    @Parameter(
+                                            in = ParameterIn.PATH,
+                                            name = "id",
+                                            required = true,
+                                            schema = @Schema(type = "integer", format = "int64")),
+                                },
                                 responses =
                                         @ApiResponse(
                                                 responseCode = "200",
@@ -124,10 +141,25 @@ public class PostRouter {
                                 summary = "List users who like a post (manyToMany)",
                                 parameters = {
                                     @Parameter(
+                                            in = ParameterIn.PATH,
+                                            name = "id",
+                                            required = true,
+                                            schema = @Schema(type = "integer", format = "int64")),
+                                    @Parameter(
                                             in = ParameterIn.QUERY,
                                             name = "afterId",
-                                            description = "Cursor: last id of the previous page"),
-                                    @Parameter(in = ParameterIn.QUERY, name = "limit", description = "1 to 100")
+                                            description = "Cursor: last id of the previous page",
+                                            schema = @Schema(type = "integer", format = "int64", minimum = "0")),
+                                    @Parameter(
+                                            in = ParameterIn.QUERY,
+                                            name = "limit",
+                                            description = "1 to 100",
+                                            schema =
+                                                    @Schema(
+                                                            type = "integer",
+                                                            format = "int32",
+                                                            minimum = "1",
+                                                            maximum = "100"))
                                 },
                                 responses =
                                         @ApiResponse(
@@ -150,6 +182,13 @@ public class PostRouter {
                         @Operation(
                                 operationId = "likePost",
                                 summary = "Like a post as the authenticated user (idempotent)",
+                                parameters = {
+                                    @Parameter(
+                                            in = ParameterIn.PATH,
+                                            name = "id",
+                                            required = true,
+                                            schema = @Schema(type = "integer", format = "int64")),
+                                },
                                 responses = @ApiResponse(responseCode = "204", description = "Liked"))),
         @RouterOperation(
                 path = "/posts/{id}/likes",
@@ -160,6 +199,13 @@ public class PostRouter {
                         @Operation(
                                 operationId = "unlikePost",
                                 summary = "Remove the authenticated user's like (idempotent)",
+                                parameters = {
+                                    @Parameter(
+                                            in = ParameterIn.PATH,
+                                            name = "id",
+                                            required = true,
+                                            schema = @Schema(type = "integer", format = "int64")),
+                                },
                                 responses = @ApiResponse(responseCode = "204", description = "Not liked"))),
         @RouterOperation(
                 path = "/posts/{id}",
@@ -170,6 +216,13 @@ public class PostRouter {
                         @Operation(
                                 operationId = "getPostById",
                                 summary = "Get a post with its author, images and like count",
+                                parameters = {
+                                    @Parameter(
+                                            in = ParameterIn.PATH,
+                                            name = "id",
+                                            required = true,
+                                            schema = @Schema(type = "integer", format = "int64")),
+                                },
                                 responses =
                                         @ApiResponse(
                                                 responseCode = "200",
@@ -186,6 +239,13 @@ public class PostRouter {
                         @Operation(
                                 operationId = "updatePost",
                                 summary = "Edit a post's content (author only)",
+                                parameters = {
+                                    @Parameter(
+                                            in = ParameterIn.PATH,
+                                            name = "id",
+                                            required = true,
+                                            schema = @Schema(type = "integer", format = "int64")),
+                                },
                                 requestBody =
                                         @RequestBody(
                                                 content =
@@ -209,6 +269,13 @@ public class PostRouter {
                         @Operation(
                                 operationId = "deletePost",
                                 summary = "Delete a post and its images (author only)",
+                                parameters = {
+                                    @Parameter(
+                                            in = ParameterIn.PATH,
+                                            name = "id",
+                                            required = true,
+                                            schema = @Schema(type = "integer", format = "int64")),
+                                },
                                 responses = {
                                     @ApiResponse(responseCode = "204", description = "Deleted"),
                                     @ApiResponse(responseCode = "403", description = "Not the author")
