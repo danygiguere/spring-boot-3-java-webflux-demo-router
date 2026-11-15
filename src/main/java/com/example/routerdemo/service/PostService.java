@@ -4,9 +4,11 @@ import com.example.routerdemo.domain.entity.IdempotencyKey;
 import com.example.routerdemo.domain.entity.Image;
 import com.example.routerdemo.domain.entity.Post;
 import com.example.routerdemo.dto.CreatePostRequest;
+import com.example.routerdemo.dto.CursorPage;
 import com.example.routerdemo.dto.ImageResponse;
 import com.example.routerdemo.dto.PostDetails;
 import com.example.routerdemo.dto.PostSummary;
+import com.example.routerdemo.dto.PostSummaryRow;
 import com.example.routerdemo.dto.UpdatePostRequest;
 import com.example.routerdemo.dto.UserResponse;
 import com.example.routerdemo.error.ConflictException;
@@ -70,23 +72,20 @@ public class PostService {
 
     // --- Reads ----------------------------------------------------------------------------------------------------
 
-    public Flux<PostSummary> feed(long beforeId, int limit) {
-        return postRepository.findFeed(beforeId, limit).map(PostSummary::of);
+    public Mono<CursorPage<PostSummary>> feed(long cursor, int limit) {
+        return summaries(postRepository.findFeed(cursor, limit + 1), limit);
     }
 
     /** The existence check runs first, so a 404 is raised before any byte is written. */
-    public Flux<PostSummary> findByAuthor(long userId, long beforeId, int limit) {
-        return userService
-                .requireUser(userId)
-                .thenMany(postRepository.findByAuthor(userId, beforeId, limit))
-                .map(PostSummary::of);
+    public Mono<CursorPage<PostSummary>> findByAuthor(long userId, long cursor, int limit) {
+        return summaries(
+                userService.requireUser(userId).thenMany(postRepository.findByAuthor(userId, cursor, limit + 1)),
+                limit);
     }
 
-    public Flux<PostSummary> findLikedBy(long userId, long beforeId, int limit) {
-        return userService
-                .requireUser(userId)
-                .thenMany(postRepository.findLikedBy(userId, beforeId, limit))
-                .map(PostSummary::of);
+    public Mono<CursorPage<PostSummary>> findLikedBy(long userId, long cursor, int limit) {
+        return summaries(
+                userService.requireUser(userId).thenMany(postRepository.findLikedBy(userId, cursor, limit + 1)), limit);
     }
 
     /** The post, its author, images and like count: three independent queries run concurrently. */
@@ -104,10 +103,12 @@ public class PostService {
                 .map(ImageResponse::of);
     }
 
-    public Flux<UserResponse> findLikers(long id, long afterId, int limit) {
+    public Mono<CursorPage<UserResponse>> findLikers(long id, long cursor, int limit) {
         return requirePost(id)
-                .thenMany(userRepository.findLikers(id, afterId, limit))
-                .map(UserResponse::of);
+                .thenMany(userRepository.findLikers(id, cursor, limit + 1))
+                .map(UserResponse::of)
+                .collectList()
+                .map(rows -> CursorPage.of(rows, limit, UserResponse::id));
     }
 
     // --- Writes ---------------------------------------------------------------------------------------------------
@@ -181,6 +182,10 @@ public class PostService {
     }
 
     // --- Helpers --------------------------------------------------------------------------------------------------
+
+    private static Mono<CursorPage<PostSummary>> summaries(Flux<PostSummaryRow> rows, int limit) {
+        return rows.map(PostSummary::of).collectList().map(list -> CursorPage.of(list, limit, PostSummary::id));
+    }
 
     private Mono<PostDetails> insertPost(AuthenticatedUser me, CreatePostRequest request, Instant now) {
         return userService.requireUser(me.userId()).flatMap(author -> postRepository

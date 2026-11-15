@@ -300,8 +300,10 @@ class PostHandlerTest extends IntegrationTest {
                 .expectStatus()
                 .isOk()
                 .expectBody()
-                .jsonPath("$[*].id")
-                .isEqualTo(List.of(4));
+                .jsonPath("$.data[*].id")
+                .isEqualTo(List.of(4))
+                .jsonPath("$.nextCursor")
+                .isEmpty();
 
         user.delete()
                 .uri("/posts/{id}/likes", post.id())
@@ -341,35 +343,79 @@ class PostHandlerTest extends IntegrationTest {
         // Post p has (p % 4) images and (p % 7) likes in the seed.
         as(ALICE)
                 .get()
-                .uri("/posts?beforeId=8&limit=3")
+                .uri("/posts?cursor=8&limit=3")
                 .exchange()
                 .expectStatus()
                 .isOk()
                 .expectBody()
-                .jsonPath("$[*].id")
+                .jsonPath("$.data[*].id")
                 .isEqualTo(List.of(7, 6, 5))
-                .jsonPath("$[0].imageCount")
+                .jsonPath("$.nextCursor")
+                .isEqualTo(5)
+                .jsonPath("$.data[0].imageCount")
                 .isEqualTo(3)
-                .jsonPath("$[0].likeCount")
+                .jsonPath("$.data[0].likeCount")
                 .isEqualTo(0)
-                .jsonPath("$[1].likeCount")
+                .jsonPath("$.data[1].likeCount")
                 .isEqualTo(6)
-                .jsonPath("$[2].author.name")
+                .jsonPath("$.data[2].author.name")
                 .isEqualTo("Bob");
+    }
+
+    @Test
+    void feed_lastPageHasNoNextCursor() {
+        // Posts 1 to 3 are below the cursor: an exactly full page, and a short one, both end the list.
+        as(ALICE)
+                .get()
+                .uri("/posts?cursor=4&limit=3")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.data[*].id")
+                .isEqualTo(List.of(3, 2, 1))
+                .jsonPath("$.nextCursor")
+                .isEmpty();
+        as(ALICE)
+                .get()
+                .uri("/posts?cursor=3&limit=3")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.data[*].id")
+                .isEqualTo(List.of(2, 1))
+                .jsonPath("$.nextCursor")
+                .isEmpty();
+    }
+
+    @Test
+    void feed_rejectsNonPositiveCursor() {
+        as(ALICE)
+                .get()
+                .uri("/posts?cursor=0")
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody()
+                .jsonPath("$.code")
+                .isEqualTo("error.request.invalidQueryParameter")
+                .jsonPath("$.detail")
+                .isEqualTo("Query parameter ‘cursor’ must be a number between 1 and 9223372036854775807.");
     }
 
     @Test
     void feed_includesEveryUsersPosts() {
         as(ALICE)
                 .get()
-                .uri("/posts?beforeId=6&limit=3")
+                .uri("/posts?cursor=6&limit=3")
                 .exchange()
                 .expectStatus()
                 .isOk()
                 .expectBody()
-                .jsonPath("$[*].id")
+                .jsonPath("$.data[*].id")
                 .isEqualTo(List.of(5, 4, 3))
-                .jsonPath("$[*].author.name")
+                .jsonPath("$.data[*].author.name")
                 .isEqualTo(List.of("Bob", "Alice", "Alice"));
     }
 

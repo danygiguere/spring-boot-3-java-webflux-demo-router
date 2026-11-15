@@ -1,9 +1,6 @@
 package com.example.routerdemo.handler;
 
-import com.example.routerdemo.dto.ImageResponse;
-import com.example.routerdemo.dto.PostSummary;
 import com.example.routerdemo.dto.ProfileRequest;
-import com.example.routerdemo.dto.UserResponse;
 import com.example.routerdemo.security.CurrentUser;
 import com.example.routerdemo.service.PostService;
 import com.example.routerdemo.service.UserService;
@@ -36,9 +33,10 @@ public class UserHandler {
     }
 
     public Mono<ServerResponse> findAll(ServerRequest request) {
-        long afterId = Requests.afterId(request);
+        long cursor = Requests.afterCursor(request);
         int limit = Requests.limit(request);
-        return ServerResponse.ok().body(userService.findAll(afterId, limit), UserResponse.class);
+        return userService.findAll(cursor, limit).flatMap(page -> ServerResponse.ok()
+                .bodyValue(page));
     }
 
     public Mono<ServerResponse> findById(ServerRequest request) {
@@ -63,22 +61,25 @@ public class UserHandler {
 
     public Mono<ServerResponse> findPosts(ServerRequest request) {
         long id = Requests.pathId(request, "id");
-        long beforeId = Requests.beforeId(request);
+        long cursor = Requests.beforeCursor(request);
         int limit = Requests.limit(request);
-        return ServerResponse.ok().body(postService.findByAuthor(id, beforeId, limit), PostSummary.class);
+        return postService.findByAuthor(id, cursor, limit).flatMap(page -> ServerResponse.ok()
+                .bodyValue(page));
     }
 
     public Mono<ServerResponse> findLikedPosts(ServerRequest request) {
         long id = Requests.pathId(request, "id");
-        long beforeId = Requests.beforeId(request);
+        long cursor = Requests.beforeCursor(request);
         int limit = Requests.limit(request);
-        return ServerResponse.ok().body(postService.findLikedBy(id, beforeId, limit), PostSummary.class);
+        return postService.findLikedBy(id, cursor, limit).flatMap(page -> ServerResponse.ok()
+                .bodyValue(page));
     }
 
     public Mono<ServerResponse> findImages(ServerRequest request) {
         long id = Requests.pathId(request, "id");
-        long beforeId = Requests.beforeId(request);
+        long cursor = Requests.beforeCursor(request);
         int limit = Requests.limit(request);
-        return ServerResponse.ok().body(userService.findImages(id, beforeId, limit), ImageResponse.class);
+        return userService.findImages(id, cursor, limit).flatMap(page -> ServerResponse.ok()
+                .bodyValue(page));
     }
 }

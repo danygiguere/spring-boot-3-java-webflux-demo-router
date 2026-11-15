@@ -37,13 +37,13 @@ public final class Requests {
     }
 
     /** Keyset cursor for newest-first lists: only ids strictly below it are returned. */
-    public static long beforeId(ServerRequest request) {
-        return queryLong(request, "beforeId", Long.MAX_VALUE, 1, Long.MAX_VALUE);
+    public static long beforeCursor(ServerRequest request) {
+        return queryLong(request, "cursor", Long.MAX_VALUE, 1, Long.MAX_VALUE);
     }
 
     /** Keyset cursor for oldest-first lists: only ids strictly above it are returned. */
-    public static long afterId(ServerRequest request) {
-        return queryLong(request, "afterId", 0, 0, Long.MAX_VALUE);
+    public static long afterCursor(ServerRequest request) {
+        return queryLong(request, "cursor", 0, 0, Long.MAX_VALUE);
     }
 
     private static long queryLong(ServerRequest request, String name, long defaultValue, long min, long max) {

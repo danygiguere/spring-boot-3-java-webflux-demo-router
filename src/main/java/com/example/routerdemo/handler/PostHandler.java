@@ -2,9 +2,7 @@ package com.example.routerdemo.handler;
 
 import com.example.routerdemo.dto.CreatePostRequest;
 import com.example.routerdemo.dto.ImageResponse;
-import com.example.routerdemo.dto.PostSummary;
 import com.example.routerdemo.dto.UpdatePostRequest;
-import com.example.routerdemo.dto.UserResponse;
 import com.example.routerdemo.error.BadRequestException;
 import com.example.routerdemo.security.CurrentUser;
 import com.example.routerdemo.service.PostService;
@@ -35,9 +33,10 @@ public class PostHandler {
     }
 
     public Mono<ServerResponse> feed(ServerRequest request) {
-        long beforeId = Requests.beforeId(request);
+        long cursor = Requests.beforeCursor(request);
         int limit = Requests.limit(request);
-        return ServerResponse.ok().body(postService.feed(beforeId, limit), PostSummary.class);
+        return postService.feed(cursor, limit).flatMap(page -> ServerResponse.ok()
+                .bodyValue(page));
     }
 
     public Mono<ServerResponse> create(ServerRequest request) {
@@ -83,9 +82,10 @@ public class PostHandler {
 
     public Mono<ServerResponse> findLikers(ServerRequest request) {
         long id = Requests.pathId(request, "id");
-        long afterId = Requests.afterId(request);
+        long cursor = Requests.afterCursor(request);
         int limit = Requests.limit(request);
-        return ServerResponse.ok().body(postService.findLikers(id, afterId, limit), UserResponse.class);
+        return postService.findLikers(id, cursor, limit).flatMap(page -> ServerResponse.ok()
+                .bodyValue(page));
     }
 
     public Mono<ServerResponse> like(ServerRequest request) {

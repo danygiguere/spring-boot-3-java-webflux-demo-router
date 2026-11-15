@@ -54,7 +54,7 @@ Router (RouterFunction + OpenAPI)  →  Handler (HTTP I/O, validation)  →  Ser
 
 - **Router** (`router/`) — `@Configuration` exposing a `RouterFunction<ServerResponse>` `@Bean`, annotated with
   `@RouterOperations` so Springdoc documents it. **Order routes carefully:** literal paths before catch-alls
-  (`GET /users/me` before `GET /users/{id}`).
+  (`GET /users/me` before `GET /users/{id}`). Paged lists document their response with `PageDocs`.
 - **Handler** (`handler/`) — `@Component`. Reads the principal (`CurrentUser`), path/query params (`Requests`) and the
   body (`RequestValidator.body`), calls the service, builds the `ServerResponse`. No business logic.
 - **Service** (`service/`) — `@Service`. Business logic and permission checks. Returns `Mono`/`Flux`
@@ -63,7 +63,9 @@ Router (RouterFunction + OpenAPI)  →  Handler (HTTP I/O, validation)  →  Ser
   `userId` in the WHERE clause and return the affected row count.
 - **Entity** (`domain/entity/`) — `record` with `@Table` and `@Id Long id` (null before insert). Never serialized.
 - **DTO** (`dto/`) — request records (validated input, explicit writable fields) and response records (explicit
-  exposed fields). No response envelope; lists are JSON arrays with keyset pagination.
+  exposed fields). Unpaginated lists are JSON arrays; paginated lists are `CursorPage<T>` (`data`, `nextCursor`, null on
+  the last page) with keyset pagination: one `cursor` parameter, the service fetches `limit + 1` rows and
+  `CursorPage.of` trims the extra one.
 
 Reactive rules: never `block()` in main code; every `Mono`/`Flux` is returned or composed; independent reads use
 `Mono.zip`; a list page and its related data (author, counts) come from one query into a flat row (`PostSummaryRow`).

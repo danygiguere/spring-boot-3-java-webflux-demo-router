@@ -3,9 +3,7 @@ package com.example.routerdemo.router;
 import com.example.routerdemo.dto.CreatePostRequest;
 import com.example.routerdemo.dto.ImageResponse;
 import com.example.routerdemo.dto.PostDetails;
-import com.example.routerdemo.dto.PostSummary;
 import com.example.routerdemo.dto.UpdatePostRequest;
-import com.example.routerdemo.dto.UserResponse;
 import com.example.routerdemo.handler.PostHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -42,13 +40,13 @@ public class PostRouter {
                                 parameters = {
                                     @Parameter(
                                             in = ParameterIn.QUERY,
-                                            name = "beforeId",
-                                            description = "Cursor: last id of the previous page",
+                                            name = "cursor",
+                                            description = PageDocs.CURSOR,
                                             schema = @Schema(type = "integer", format = "int64", minimum = "1")),
                                     @Parameter(
                                             in = ParameterIn.QUERY,
                                             name = "limit",
-                                            description = "1 to 100",
+                                            description = PageDocs.LIMIT,
                                             schema =
                                                     @Schema(
                                                             type = "integer",
@@ -61,13 +59,10 @@ public class PostRouter {
                                                 responseCode = "200",
                                                 content =
                                                         @Content(
-                                                                array =
-                                                                        @ArraySchema(
-                                                                                schema =
-                                                                                        @Schema(
-                                                                                                implementation =
-                                                                                                        PostSummary
-                                                                                                                .class)))))),
+                                                                schema =
+                                                                        @Schema(
+                                                                                implementation =
+                                                                                        PageDocs.Posts.class))))),
         @RouterOperation(
                 path = "/posts",
                 method = RequestMethod.POST,
@@ -147,13 +142,13 @@ public class PostRouter {
                                             schema = @Schema(type = "integer", format = "int64")),
                                     @Parameter(
                                             in = ParameterIn.QUERY,
-                                            name = "afterId",
-                                            description = "Cursor: last id of the previous page",
+                                            name = "cursor",
+                                            description = PageDocs.CURSOR,
                                             schema = @Schema(type = "integer", format = "int64", minimum = "0")),
                                     @Parameter(
                                             in = ParameterIn.QUERY,
                                             name = "limit",
-                                            description = "1 to 100",
+                                            description = PageDocs.LIMIT,
                                             schema =
                                                     @Schema(
                                                             type = "integer",
@@ -166,13 +161,10 @@ public class PostRouter {
                                                 responseCode = "200",
                                                 content =
                                                         @Content(
-                                                                array =
-                                                                        @ArraySchema(
-                                                                                schema =
-                                                                                        @Schema(
-                                                                                                implementation =
-                                                                                                        UserResponse
-                                                                                                                .class)))))),
+                                                                schema =
+                                                                        @Schema(
+                                                                                implementation =
+                                                                                        PageDocs.Users.class))))),
         @RouterOperation(
                 path = "/posts/{id}/likes",
                 method = RequestMethod.PUT,

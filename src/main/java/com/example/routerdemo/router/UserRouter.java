@@ -1,8 +1,6 @@
 package com.example.routerdemo.router;
 
-import com.example.routerdemo.dto.ImageResponse;
 import com.example.routerdemo.dto.MeResponse;
-import com.example.routerdemo.dto.PostSummary;
 import com.example.routerdemo.dto.ProfileRequest;
 import com.example.routerdemo.dto.ProfileResponse;
 import com.example.routerdemo.dto.UserResponse;
@@ -10,7 +8,6 @@ import com.example.routerdemo.handler.UserHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -82,13 +79,13 @@ public class UserRouter {
                                 parameters = {
                                     @Parameter(
                                             in = ParameterIn.QUERY,
-                                            name = "afterId",
-                                            description = "Cursor: last id of the previous page",
+                                            name = "cursor",
+                                            description = PageDocs.CURSOR,
                                             schema = @Schema(type = "integer", format = "int64", minimum = "0")),
                                     @Parameter(
                                             in = ParameterIn.QUERY,
                                             name = "limit",
-                                            description = "1 to 100",
+                                            description = PageDocs.LIMIT,
                                             schema =
                                                     @Schema(
                                                             type = "integer",
@@ -101,13 +98,10 @@ public class UserRouter {
                                                 responseCode = "200",
                                                 content =
                                                         @Content(
-                                                                array =
-                                                                        @ArraySchema(
-                                                                                schema =
-                                                                                        @Schema(
-                                                                                                implementation =
-                                                                                                        UserResponse
-                                                                                                                .class)))))),
+                                                                schema =
+                                                                        @Schema(
+                                                                                implementation =
+                                                                                        PageDocs.Users.class))))),
         @RouterOperation(
                 path = "/users/{id}/profile",
                 method = RequestMethod.GET,
@@ -150,13 +144,13 @@ public class UserRouter {
                                             schema = @Schema(type = "integer", format = "int64")),
                                     @Parameter(
                                             in = ParameterIn.QUERY,
-                                            name = "beforeId",
-                                            description = "Cursor: last id of the previous page",
+                                            name = "cursor",
+                                            description = PageDocs.CURSOR,
                                             schema = @Schema(type = "integer", format = "int64", minimum = "1")),
                                     @Parameter(
                                             in = ParameterIn.QUERY,
                                             name = "limit",
-                                            description = "1 to 100",
+                                            description = PageDocs.LIMIT,
                                             schema =
                                                     @Schema(
                                                             type = "integer",
@@ -169,13 +163,10 @@ public class UserRouter {
                                                 responseCode = "200",
                                                 content =
                                                         @Content(
-                                                                array =
-                                                                        @ArraySchema(
-                                                                                schema =
-                                                                                        @Schema(
-                                                                                                implementation =
-                                                                                                        PostSummary
-                                                                                                                .class)))))),
+                                                                schema =
+                                                                        @Schema(
+                                                                                implementation =
+                                                                                        PageDocs.Posts.class))))),
         @RouterOperation(
                 path = "/users/{id}/liked-posts",
                 method = RequestMethod.GET,
@@ -193,13 +184,13 @@ public class UserRouter {
                                             schema = @Schema(type = "integer", format = "int64")),
                                     @Parameter(
                                             in = ParameterIn.QUERY,
-                                            name = "beforeId",
-                                            description = "Cursor: last id of the previous page",
+                                            name = "cursor",
+                                            description = PageDocs.CURSOR,
                                             schema = @Schema(type = "integer", format = "int64", minimum = "1")),
                                     @Parameter(
                                             in = ParameterIn.QUERY,
                                             name = "limit",
-                                            description = "1 to 100",
+                                            description = PageDocs.LIMIT,
                                             schema =
                                                     @Schema(
                                                             type = "integer",
@@ -212,13 +203,10 @@ public class UserRouter {
                                                 responseCode = "200",
                                                 content =
                                                         @Content(
-                                                                array =
-                                                                        @ArraySchema(
-                                                                                schema =
-                                                                                        @Schema(
-                                                                                                implementation =
-                                                                                                        PostSummary
-                                                                                                                .class)))))),
+                                                                schema =
+                                                                        @Schema(
+                                                                                implementation =
+                                                                                        PageDocs.Posts.class))))),
         @RouterOperation(
                 path = "/users/{id}/images",
                 method = RequestMethod.GET,
@@ -236,13 +224,13 @@ public class UserRouter {
                                             schema = @Schema(type = "integer", format = "int64")),
                                     @Parameter(
                                             in = ParameterIn.QUERY,
-                                            name = "beforeId",
-                                            description = "Cursor: last id of the previous page",
+                                            name = "cursor",
+                                            description = PageDocs.CURSOR,
                                             schema = @Schema(type = "integer", format = "int64", minimum = "1")),
                                     @Parameter(
                                             in = ParameterIn.QUERY,
                                             name = "limit",
-                                            description = "1 to 100",
+                                            description = PageDocs.LIMIT,
                                             schema =
                                                     @Schema(
                                                             type = "integer",
@@ -255,13 +243,10 @@ public class UserRouter {
                                                 responseCode = "200",
                                                 content =
                                                         @Content(
-                                                                array =
-                                                                        @ArraySchema(
-                                                                                schema =
-                                                                                        @Schema(
-                                                                                                implementation =
-                                                                                                        ImageResponse
-                                                                                                                .class)))))),
+                                                                schema =
+                                                                        @Schema(
+                                                                                implementation =
+                                                                                        PageDocs.Images.class))))),
         @RouterOperation(
                 path = "/users/{id}",
                 method = RequestMethod.GET,
