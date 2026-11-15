@@ -1,7 +1,7 @@
 package com.example.routerdemo.service;
 
 import com.example.routerdemo.dto.TokenResponse;
-import com.example.routerdemo.exception.AppException;
+import com.example.routerdemo.error.UnauthenticatedException;
 import com.example.routerdemo.repository.UserRepository;
 import com.example.routerdemo.security.DevTokenEnabled;
 import com.example.routerdemo.security.DevTokenIssuer;
@@ -24,7 +24,7 @@ public class DevTokenService {
     public Mono<TokenResponse> issue(String email) {
         return userRepository
                 .findByEmail(email)
-                .switchIfEmpty(Mono.error(() -> new AppException.Unauthorized("error.auth.invalid")))
+                .switchIfEmpty(Mono.error(() -> new UnauthenticatedException("error.auth.invalid")))
                 .map(issuer::issue);
     }
 }

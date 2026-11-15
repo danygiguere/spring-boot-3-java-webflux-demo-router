@@ -105,8 +105,8 @@ class SecurityTest extends IntegrationTest {
                 .expectStatus()
                 .isUnauthorized()
                 .expectBody()
-                .jsonPath("$.type")
-                .isEqualTo("/errors/auth-invalid");
+                .jsonPath("$.code")
+                .isEqualTo("error.auth.invalid");
     }
 
     @Test

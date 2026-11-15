@@ -1,7 +1,6 @@
 package com.example.routerdemo.security;
 
-import com.example.routerdemo.exception.AppException;
-import com.example.routerdemo.exception.ApplicationExceptionHandler;
+import com.example.routerdemo.error.GlobalExceptionHandler;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -52,12 +51,10 @@ public class SecurityConfig {
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(
-            ServerHttpSecurity http, ApplicationExceptionHandler exceptionHandler) {
+            ServerHttpSecurity http, GlobalExceptionHandler exceptionHandler) {
         // 401/403 go through the same handler as every other error: same RFC 9457 shape, locale and correlationId.
-        ServerAuthenticationEntryPoint unauthorized =
-                (exchange, ex) -> exceptionHandler.handle(exchange, new AppException.Unauthorized("error.401"));
-        ServerAccessDeniedHandler forbidden =
-                (exchange, ex) -> exceptionHandler.handle(exchange, new AppException.Forbidden("error.403"));
+        ServerAuthenticationEntryPoint unauthorized = (exchange, ex) -> exceptionHandler.handle(exchange, ex);
+        ServerAccessDeniedHandler forbidden = (exchange, ex) -> exceptionHandler.handle(exchange, ex);
 
         return http
                 // Bearer tokens, no cookies: the browser never attaches credentials on its own, so CSRF does not apply.

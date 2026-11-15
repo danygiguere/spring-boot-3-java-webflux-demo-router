@@ -1,6 +1,6 @@
 package com.example.routerdemo.web;
 
-import com.example.routerdemo.exception.AppException;
+import com.example.routerdemo.error.BadRequestException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 
 /**
  * Reads and validates a request body. Router handlers have no {@code @Valid}: this is its functional counterpart.
- * Violations become a {@link ConstraintViolationException}, rendered as a 422 by the error handler.
+ * Violations become a {@link ConstraintViolationException}, rendered as a 400 by the error handler.
  */
 @Component
 public class RequestValidator {
@@ -29,7 +29,7 @@ public class RequestValidator {
     public <T> Mono<T> body(ServerRequest request, Class<T> type) {
         Locale locale = Requests.locale(request);
         return request.bodyToMono(type)
-                .switchIfEmpty(Mono.error(() -> new AppException.BadRequest("error.body.required")))
+                .switchIfEmpty(Mono.error(() -> new BadRequestException("error.request.missingBody")))
                 .map(body -> validate(body, locale));
     }
 

@@ -5,7 +5,7 @@ import com.example.routerdemo.dto.ImageResponse;
 import com.example.routerdemo.dto.PostSummary;
 import com.example.routerdemo.dto.UpdatePostRequest;
 import com.example.routerdemo.dto.UserResponse;
-import com.example.routerdemo.exception.AppException;
+import com.example.routerdemo.error.BadRequestException;
 import com.example.routerdemo.security.CurrentUser;
 import com.example.routerdemo.service.PostService;
 import com.example.routerdemo.web.RequestValidator;
@@ -108,10 +108,10 @@ public class PostHandler {
     private static String idempotencyKey(ServerRequest request) {
         String key = request.headers().firstHeader(IDEMPOTENCY_KEY_HEADER);
         if (key == null || key.isBlank()) {
-            throw new AppException.BadRequest("error.header.required", IDEMPOTENCY_KEY_HEADER);
+            throw new BadRequestException("error.request.missingHeader", IDEMPOTENCY_KEY_HEADER);
         }
         if (!IDEMPOTENCY_KEY.matcher(key).matches()) {
-            throw new AppException.BadRequest("error.idempotency.key.invalid");
+            throw new BadRequestException("error.idempotencyKey.invalid");
         }
         return key;
     }

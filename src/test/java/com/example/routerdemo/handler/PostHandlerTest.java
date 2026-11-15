@@ -1,6 +1,7 @@
 package com.example.routerdemo.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 
 import com.example.routerdemo.dto.PostDetails;
 import com.example.routerdemo.support.IntegrationTest;
@@ -80,8 +81,8 @@ class PostHandlerTest extends IntegrationTest {
                 .expectStatus()
                 .isEqualTo(409)
                 .expectBody()
-                .jsonPath("$.type")
-                .isEqualTo("/errors/idempotency-key-reused");
+                .jsonPath("$.code")
+                .isEqualTo("error.idempotencyKey.reused");
     }
 
     @Test
@@ -103,8 +104,8 @@ class PostHandlerTest extends IntegrationTest {
                 .expectStatus()
                 .isBadRequest()
                 .expectBody()
-                .jsonPath("$.type")
-                .isEqualTo("/errors/header-required");
+                .jsonPath("$.code")
+                .isEqualTo("error.request.missingHeader");
     }
 
     @Test
@@ -118,8 +119,8 @@ class PostHandlerTest extends IntegrationTest {
                 .expectStatus()
                 .isBadRequest()
                 .expectBody()
-                .jsonPath("$.type")
-                .isEqualTo("/errors/idempotency-key-invalid");
+                .jsonPath("$.code")
+                .isEqualTo("error.idempotencyKey.invalid");
     }
 
     @Test
@@ -132,16 +133,16 @@ class PostHandlerTest extends IntegrationTest {
                 .bodyValue(Map.of("content", "x".repeat(5001)))
                 .exchange()
                 .expectStatus()
-                .isEqualTo(422)
+                .isBadRequest()
                 .expectBody()
                 .jsonPath("$.detail")
-                .isEqualTo("Échec de la validation — veuillez corriger les erreurs ci-dessus.")
-                .jsonPath("$.errors.content[0]")
-                .isEqualTo("Le contenu ne doit pas dépasser 5000 caractères");
+                .isEqualTo("Un ou plusieurs champs sont invalides.")
+                .jsonPath("$.errors[?(@.field == 'content')].message")
+                .value(hasItem("Le contenu ne doit pas dépasser 5000 caractères"));
     }
 
     @Test
-    void create_invalidBody_returns422WithFieldErrors() {
+    void create_invalidBody_returns400WithFieldErrors() {
         List<String> elevenImages = IntStream.range(0, 11)
                 .mapToObj(i -> "https://images.example.com/" + i + ".jpg")
                 .toList();
@@ -152,12 +153,12 @@ class PostHandlerTest extends IntegrationTest {
                 .bodyValue(Map.of("content", " ", "imageUrls", elevenImages))
                 .exchange()
                 .expectStatus()
-                .isEqualTo(422)
+                .isBadRequest()
                 .expectBody()
-                .jsonPath("$.errors.content[0]")
-                .isEqualTo("Content is required")
-                .jsonPath("$.errors.imageUrls[0]")
-                .isEqualTo("A post can have at most 10 images");
+                .jsonPath("$.errors[?(@.field == 'content')].message")
+                .value(hasItem("Content is required"))
+                .jsonPath("$.errors[?(@.field == 'imageUrls')].message")
+                .value(hasItem("A post can have at most 10 images"));
 
         as(AUTHOR)
                 .post()
@@ -166,14 +167,14 @@ class PostHandlerTest extends IntegrationTest {
                 .bodyValue(Map.of("content", "ok", "imageUrls", List.of("http://insecure.example.com/x.jpg")))
                 .exchange()
                 .expectStatus()
-                .isEqualTo(422)
+                .isBadRequest()
                 .expectBody()
-                .jsonPath("$.errors['imageUrls[0]'][0]")
-                .isEqualTo("Image URL must be a valid https URL");
+                .jsonPath("$.errors[?(@.field == 'imageUrls[0]')].message")
+                .value(hasItem("Image URL must be a valid https URL"));
     }
 
     @Test
-    void create_duplicateImageUrls_returns422() {
+    void create_duplicateImageUrls_returns400() {
         String url = "https://images.example.com/x.jpg";
         as(AUTHOR)
                 .post()
@@ -182,10 +183,10 @@ class PostHandlerTest extends IntegrationTest {
                 .bodyValue(Map.of("content", "ok", "imageUrls", List.of(url, url)))
                 .exchange()
                 .expectStatus()
-                .isEqualTo(422)
+                .isBadRequest()
                 .expectBody()
-                .jsonPath("$.errors.imageUrls[0]")
-                .isEqualTo("Image URLs must be unique");
+                .jsonPath("$.errors[?(@.field == 'imageUrls')].message")
+                .value(hasItem("Image URLs must be unique"));
     }
 
     @Test
@@ -242,8 +243,8 @@ class PostHandlerTest extends IntegrationTest {
                 .expectStatus()
                 .isForbidden()
                 .expectBody()
-                .jsonPath("$.type")
-                .isEqualTo("/errors/post-not-author");
+                .jsonPath("$.code")
+                .isEqualTo("error.post.notAuthor");
 
         as(AUTHOR)
                 .put()
@@ -282,8 +283,8 @@ class PostHandlerTest extends IntegrationTest {
                 .expectStatus()
                 .isEqualTo(409)
                 .expectBody()
-                .jsonPath("$.type")
-                .isEqualTo("/errors/idempotency-key-gone");
+                .jsonPath("$.code")
+                .isEqualTo("error.idempotencyKey.gone");
     }
 
     @Test
@@ -331,8 +332,8 @@ class PostHandlerTest extends IntegrationTest {
                 .expectStatus()
                 .isNotFound()
                 .expectBody()
-                .jsonPath("$.type")
-                .isEqualTo("/errors/post-not-found");
+                .jsonPath("$.code")
+                .isEqualTo("error.post.notFound");
     }
 
     @Test

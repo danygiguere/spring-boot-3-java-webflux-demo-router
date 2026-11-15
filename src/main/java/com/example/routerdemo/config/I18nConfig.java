@@ -1,6 +1,7 @@
 package com.example.routerdemo.config;
 
 import jakarta.validation.MessageInterpolator;
+import java.util.List;
 import java.util.Locale;
 import org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator;
 import org.springframework.context.MessageSource;
@@ -13,7 +14,10 @@ import org.springframework.validation.beanvalidation.MessageSourceResourceBundle
 import org.springframework.web.server.i18n.AcceptHeaderLocaleContextResolver;
 import org.springframework.web.server.i18n.LocaleContextResolver;
 
-/** English by default; {@code Accept-Language: fr} for French. */
+/**
+ * English by default; {@code Accept-Language: fr} (or {@code fr-CA}) for French. Other languages fall back to
+ * English.
+ */
 @Configuration
 public class I18nConfig {
 
@@ -40,6 +44,7 @@ public class I18nConfig {
     @Bean
     public LocaleContextResolver localeContextResolver() {
         AcceptHeaderLocaleContextResolver resolver = new AcceptHeaderLocaleContextResolver();
+        resolver.setSupportedLocales(List.of(Locale.ENGLISH, Locale.FRENCH));
         resolver.setDefaultLocale(Locale.ENGLISH);
         return resolver;
     }

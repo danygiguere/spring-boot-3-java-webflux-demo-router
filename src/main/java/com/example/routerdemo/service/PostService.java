@@ -9,7 +9,9 @@ import com.example.routerdemo.dto.PostDetails;
 import com.example.routerdemo.dto.PostSummary;
 import com.example.routerdemo.dto.UpdatePostRequest;
 import com.example.routerdemo.dto.UserResponse;
-import com.example.routerdemo.exception.AppException;
+import com.example.routerdemo.error.ConflictException;
+import com.example.routerdemo.error.ForbiddenException;
+import com.example.routerdemo.error.NotFoundException;
 import com.example.routerdemo.repository.IdempotencyKeyRepository;
 import com.example.routerdemo.repository.ImageRepository;
 import com.example.routerdemo.repository.PostLikeRepository;
@@ -166,7 +168,8 @@ public class PostService {
                 // The post was deleted between the existence check and the insert (foreign key violation).
                 .onErrorMap(
                         DataIntegrityViolationException.class,
-                        e -> new AppException.NotFound(e, "error.post.not.found", id))
+                        e -> new NotFoundException(
+                                "error.post.notFound", List.of(id), "Post deleted before like insert", e))
                 .then();
     }
 
@@ -196,10 +199,10 @@ public class PostService {
 
     private static Long replayedPostId(IdempotencyKey existing, String requestHash) {
         if (!existing.requestHash().equals(requestHash)) {
-            throw new AppException.Conflict("error.idempotency.key.reused");
+            throw new ConflictException("error.idempotencyKey.reused");
         }
         if (existing.postId() == null) {
-            throw new AppException.Conflict("error.idempotency.key.gone");
+            throw new ConflictException("error.idempotencyKey.gone");
         }
         return existing.postId();
     }
@@ -231,10 +234,10 @@ public class PostService {
         return requirePost(id)
                 .flatMap(post -> post.userId().equals(me.userId())
                         ? Mono.just(post)
-                        : Mono.error(new AppException.Forbidden("error.post.not.author", id)));
+                        : Mono.error(new ForbiddenException("error.post.notAuthor", id)));
     }
 
-    private static AppException postNotFound(long id) {
-        return new AppException.NotFound("error.post.not.found", id);
+    private static NotFoundException postNotFound(long id) {
+        return new NotFoundException("error.post.notFound", id);
     }
 }

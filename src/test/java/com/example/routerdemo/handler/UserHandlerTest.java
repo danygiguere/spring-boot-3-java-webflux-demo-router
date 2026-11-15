@@ -1,5 +1,7 @@
 package com.example.routerdemo.handler;
 
+import static org.hamcrest.Matchers.hasItem;
+
 import com.example.routerdemo.support.IntegrationTest;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -51,10 +53,10 @@ class UserHandlerTest extends IntegrationTest {
                 .expectStatus()
                 .isBadRequest()
                 .expectBody()
-                .jsonPath("$.type")
-                .isEqualTo("/errors/query-param-invalid")
+                .jsonPath("$.code")
+                .isEqualTo("error.request.invalidQueryParameter")
                 .jsonPath("$.detail")
-                .isEqualTo("Query parameter 'limit' must be a number between 1 and 100");
+                .isEqualTo("Query parameter ‘limit’ must be a number between 1 and 100.");
     }
 
     @Test
@@ -67,10 +69,10 @@ class UserHandlerTest extends IntegrationTest {
                 .expectStatus()
                 .isNotFound()
                 .expectBody()
-                .jsonPath("$.type")
-                .isEqualTo("/errors/user-not-found")
+                .jsonPath("$.code")
+                .isEqualTo("error.user.notFound")
                 .jsonPath("$.detail")
-                .isEqualTo("Utilisateur 999999 introuvable")
+                .isEqualTo("Utilisateur 999999 introuvable.")
                 .jsonPath("$.instance")
                 .isEqualTo("/users/999999");
     }
@@ -84,8 +86,8 @@ class UserHandlerTest extends IntegrationTest {
                 .expectStatus()
                 .isBadRequest()
                 .expectBody()
-                .jsonPath("$.type")
-                .isEqualTo("/errors/path-param-invalid");
+                .jsonPath("$.code")
+                .isEqualTo("error.request.invalidPathParameter");
     }
 
     @Test
@@ -129,12 +131,12 @@ class UserHandlerTest extends IntegrationTest {
                 .bodyValue(Map.of("avatarUrl", "javascript:alert(1)"))
                 .exchange()
                 .expectStatus()
-                .isEqualTo(422)
+                .isBadRequest()
                 .expectBody()
-                .jsonPath("$.type")
-                .isEqualTo("/errors/validation-failed")
-                .jsonPath("$.errors.avatarUrl[0]")
-                .isEqualTo("L'URL de l'avatar doit être une URL https valide");
+                .jsonPath("$.code")
+                .isEqualTo("error.validation")
+                .jsonPath("$.errors[?(@.field == 'avatarUrl')].message")
+                .value(hasItem("L’URL de l’avatar doit être une URL https valide"));
     }
 
     @Test
@@ -171,8 +173,8 @@ class UserHandlerTest extends IntegrationTest {
                 .expectStatus()
                 .isNotFound()
                 .expectBody()
-                .jsonPath("$.type")
-                .isEqualTo("/errors/user-not-found");
+                .jsonPath("$.code")
+                .isEqualTo("error.user.notFound");
     }
 
     @Test
@@ -199,7 +201,7 @@ class UserHandlerTest extends IntegrationTest {
                 .expectStatus()
                 .isNotFound()
                 .expectBody()
-                .jsonPath("$.type")
-                .isEqualTo("/errors/user-not-found");
+                .jsonPath("$.code")
+                .isEqualTo("error.user.notFound");
     }
 }

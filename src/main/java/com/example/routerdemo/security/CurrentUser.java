@@ -1,6 +1,6 @@
 package com.example.routerdemo.security;
 
-import com.example.routerdemo.exception.AppException;
+import com.example.routerdemo.error.UnauthenticatedException;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -17,6 +17,6 @@ public class CurrentUser {
                 .filter(JwtAuthenticationToken.class::isInstance)
                 .cast(JwtAuthenticationToken.class)
                 .map(token -> AuthenticatedUser.from(token.getToken()))
-                .switchIfEmpty(Mono.error(() -> new AppException.Unauthorized("error.401")));
+                .switchIfEmpty(Mono.error(() -> new UnauthenticatedException()));
     }
 }

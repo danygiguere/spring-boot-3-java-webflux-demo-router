@@ -6,7 +6,7 @@ import com.example.routerdemo.dto.MeResponse;
 import com.example.routerdemo.dto.ProfileRequest;
 import com.example.routerdemo.dto.ProfileResponse;
 import com.example.routerdemo.dto.UserResponse;
-import com.example.routerdemo.exception.AppException;
+import com.example.routerdemo.error.NotFoundException;
 import com.example.routerdemo.repository.ImageRepository;
 import com.example.routerdemo.repository.ProfileRepository;
 import com.example.routerdemo.repository.UserRepository;
@@ -44,7 +44,7 @@ public class UserService {
     public Mono<ProfileResponse> findProfile(long userId) {
         return requireUser(userId)
                 .flatMap(user -> profileRepository.findByUserId(user.id()))
-                .switchIfEmpty(Mono.error(() -> new AppException.NotFound("error.profile.not.found", userId)))
+                .switchIfEmpty(Mono.error(() -> new NotFoundException("error.profile.notFound", userId)))
                 .map(ProfileResponse::of);
     }
 
@@ -65,6 +65,6 @@ public class UserService {
     public Mono<User> requireUser(long userId) {
         return userRepository
                 .findById(userId)
-                .switchIfEmpty(Mono.error(() -> new AppException.NotFound("error.user.not.found", userId)));
+                .switchIfEmpty(Mono.error(() -> new NotFoundException("error.user.notFound", userId)));
     }
 }

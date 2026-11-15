@@ -1,6 +1,6 @@
 package com.example.routerdemo.web;
 
-import com.example.routerdemo.exception.AppException;
+import com.example.routerdemo.error.BadRequestException;
 import java.util.Locale;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
@@ -28,7 +28,7 @@ public final class Requests {
         } catch (NumberFormatException ignored) {
             // Reported as a 400 below.
         }
-        throw new AppException.BadRequest("error.path.param.invalid", name);
+        throw new BadRequestException("error.request.invalidPathParameter", name);
     }
 
     /** Page size: {@value #DEFAULT_LIMIT} by default, never more than {@value #MAX_LIMIT}. */
@@ -59,6 +59,6 @@ public final class Requests {
         } catch (NumberFormatException ignored) {
             // Reported as a 400 below.
         }
-        throw new AppException.BadRequest("error.query.param.invalid", name, min, max);
+        throw new BadRequestException("error.request.invalidQueryParameter", name, min, max);
     }
 }

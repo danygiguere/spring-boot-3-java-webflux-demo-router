@@ -58,7 +58,7 @@ Router (RouterFunction + OpenAPI)  →  Handler (HTTP I/O, validation)  →  Ser
 - **Handler** (`handler/`) — `@Component`. Reads the principal (`CurrentUser`), path/query params (`Requests`) and the
   body (`RequestValidator.body`), calls the service, builds the `ServerResponse`. No business logic.
 - **Service** (`service/`) — `@Service`. Business logic and permission checks. Returns `Mono`/`Flux`
-  of DTOs; signals `AppException.*`. Multi-table writes go through `TransactionalOperator`.
+  of DTOs; signals `ApiException` subclasses (`NotFoundException`, …; `internalMessage` is logged only). Multi-table writes go through `TransactionalOperator`.
 - **Repository** (`repository/`) — `ReactiveCrudRepository<Entity, Long>` + `@Query`. Writes take the owner's
   `userId` in the WHERE clause and return the affected row count.
 - **Entity** (`domain/entity/`) — `record` with `@Table` and `@Id Long id` (null before insert). Never serialized.
@@ -86,7 +86,8 @@ Inside a transaction, compose sequentially (one connection).
 - `as(email)` returns a client authenticated as a seeded user.
 - Tests that write create their own posts as users 3 and 4; never change seeded posts/likes or users 1 and 2, so
   seed-based assertions hold in any order.
-- Assert status and the problem JSON (`$.type`, `$.status`, `$.errors.<field>`, `$.correlationId`); cover the success
+- Every public message key exists in `messages.properties` and `messages_fr.properties` (`MessageBundleConsistencyTest`, `MessageKeyUsageTest`). Use the typographic apostrophe (’) in messages.
+- Assert status and the problem JSON (`$.code`, `$.status`, `$.errors[?(@.field == '<field>')]`, `$.correlationId`); cover the success
   path, validation errors, and the not-found / not-owner paths.
 
 # Engineering audit digest
